@@ -1,48 +1,63 @@
 #include<bits/stdc++.h>
 using namespace std;
-int n,m,k;
-int c[2000010],A[12][10010];
+long long n,m,k;
+long long c[20000010];
 struct edge{
-	int x,y,l;
-}a[2000010];
-int p[2000010],sum;
-int find(int x){
+	long long x,y,l;
+}a[20000010];
+bool vis[20000010];
+long long p[20000010],ans=1e18;
+long long find(long long x){
 	if(p[x]==x) return x;
 	return p[x]=find(p[x]);
 }
-void unite(int x,int y){
-	int f1=find(x),f2=find(y);
+void unite(long long x,long long y){
+	long long f1=find(x),f2=find(y);
 	if(f2!=f1) p[f2]=f1; 
 	return;
 }
 bool cmp(edge x,edge y){
 	return x.l<y.l;
 }
+void dfs(long long now,long long num,long long cost){
+    if(now>n+k){
+        for(int i=1;i<=n+k+1;i++) p[i]=i;
+        long long cnt=0,sum=cost;
+        num=num+n;
+        for(int i=1;i<=m;i++){
+            int u=a[i].x,v=a[i].y,l=a[i].l;
+            if(u>n&&!vis[u]) continue;
+            if(find(u)!=find(v)){
+                unite(u,v);
+                cnt++;
+                sum+=l;
+                if(cnt==num-1) break;
+            }
+        }
+        if(cnt==num-1) ans=min(ans,sum);
+        return;
+    }
+    vis[now]=1;
+    dfs(now+1,num+1,cost+c[now]);
+    vis[now]=0;
+    dfs(now+1,num,cost);
+}
 int main(){
-	cin>>n>>m>>k;
-	for(int i=1;i<=m;i++){
+    ios::sync_with_stdio(0),cin.tie(0),cout.tie(0);
+    cin>>n>>m>>k;
+    for(long long i=1;i<=n+k;i++) p[i]=i;
+    for(long long i=1;i<=m;i++){
 		cin>>a[i].x>>a[i].y>>a[i].l;
-		sum+=a[i].l;
 	}
-    for(int i=1;i<=k;i++){
-        cin>>c[i];
-        for(int j=1;j<=n;j++){
-            cin>>A[i][j];
+    for(long long j=n+1;j<=n+k;j++){
+        cin>>c[j];
+        for(long long i=1,w;i<=n;i++){
+            cin>>w;
+            a[++m]={j,i,w};
         }
     }
-	sort(a+1,a+1+n,cmp);
-	for(int i=1;i<=n;i++) p[i]=i;
-	int ans=0,cnt=0;
-	for(int i=1;i<=n;i++){
-		int f1=find(a[i].x),f2=find(a[i].y);
-		if(f1!=f2){
-			unite(f1,f2);
-			ans=0;
-			ans+=a[i].l;
-			cnt++;
-			if(cnt==n-1) break;
-		}
-	}
-	if(cnt==n-1) cout<<ans;
-	return 0;
-} 
+    sort(a+1,a+m+1,cmp);
+    dfs(n+1,0,0);
+    cout<<ans;
+    return 0;
+}
